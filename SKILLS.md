@@ -17,12 +17,12 @@ openclaw skills install markdown-converter
 openclaw skills install word-docx
 openclaw skills install excel-xlsx
 openclaw skills install superdesign
+openclaw skills install github
 ```
 
 ## 明确未安装
 
 ```text
-github
 desktop-control
 xiaohongshu-mcp
 ```
@@ -30,3 +30,4 @@ xiaohongshu-mcp
 ## 本地辅助工具
 
 - `uv` / `uvx`：供 `markdown-converter` 通过 `uvx markitdown` 转换文档。
+- `gh`：GitHub CLI，供 `github` skill 使用。当前安装在 `~/.local/bin/gh`；Git SSH 已可用，`gh` API 操作仍需 `gh auth login`。
