@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# morning - 早 08:00 推送：成都天气 + 穿衣 + 温柔早安
+# 由 cron 调用：bin/morning && true（推送失败不影响别的任务）
+
+set -euo pipefail
+
+BIN_DIR="$(cd "$(dirname "$0")" && pwd)"
+PUSH="$BIN_DIR/push"
+
+# 拉天气（失败时给降级文本）
+W_JSON="$(curl -fsS --connect-timeout 8 --max-time 15 \
+  "https://wttr.in/Chengdu?lang=zh&format=j1" 2>/dev/null || echo '')"
+
+if [[ -n "$W_JSON" ]]; then
+  TEMP="$(echo "$W_JSON" | grep -oP '"temp_C":"\K[^"]+' | head -1)"
+  FEELS="$(echo "$W_JSON" | grep -oP '"FeelsLikeC":"\K[^"]+' | head -1)"
+  HUM="$(echo "$W_JSON" | grep -oP '"humidity":"\K[^"]+' | head -1)"
+  DESC="$(echo "$W_JSON" | grep -oP '"value":"\K[^"]+' | head -1)"
+  # 今日最高/最低
+  TMAX="$(echo "$W_JSON" | grep -oP '"maxtempC":"\K[^"]+' | head -1)"
+  TMIN="$(echo "$W_JSON" | grep -oP '"mintempC":"\K[^"]+' | head -1)"
+  RAIN="$(echo "$W_JSON" | grep -oP '"chanceofrain":"\K[^"]+' | head -1)"
+else
+  TEMP="?"; FEELS="?"; HUM="?"; DESC="(天气查询失败)"; TMAX="?"; TMIN="?"; RAIN="0"
+fi
+
+# 穿衣 / 雨伞建议（简单规则）
+ADVISE=""
+if [[ "$TMAX" =~ ^[0-9]+$ ]]; then
+  if   [[ "$TMAX" -ge 30 ]]; then ADVISE="今天会比较热，短袖+防晒哦 ☀️"
+  elif [[ "$TMAX" -ge 24 ]]; then ADVISE="温度刚刚好，单衣就行 🌿"
+  elif [[ "$TMAX" -ge 18 ]]; then ADVISE="早晚有点凉，记得带件薄外套 🧥"
+  elif [[ "$TMAX" -ge 12 ]]; then ADVISE="天气偏凉，外套穿厚点 🍂"
+  else                             ADVISE="今天比较冷，注意保暖！🧣"
+  fi
+fi
+if [[ "$RAIN" =~ ^[0-9]+$ ]] && [[ "$RAIN" -ge 40 ]]; then
+  ADVISE="$ADVISE 出门带把伞，下雨概率 ${RAIN}% ☂️"
+fi
+
+DATE_STR="$(date '+%Y-%m-%d %A')"
+GREETINGS=(
+  "早呀 Qingyan～新的一天开始啦 🌸"
+  "早上好呀，今天也要元气满满哦 ☀️"
+  "Morning～小伊给你送早报来啦 🌸"
+  "起床啦起床啦，新的一天开工咯 ☕"
+  "早安 Qingyan，希望今天对你温柔一点 🍵"
+)
+GREET="${GREETINGS[$RANDOM % ${#GREETINGS[@]}]}"
+
+TITLE="🌸 早安 · 成都 ${TEMP}°C"
+
+BODY="**${GREET}**
+
+📅 ${DATE_STR}
+
+### 🌤️ 成都天气
+- 当前：${DESC} ${TEMP}°C（体感 ${FEELS}°C）
+- 今日：${TMIN}°C ~ ${TMAX}°C
+- 湿度：${HUM}% · 降雨概率：${RAIN}%
+
+### 👚 穿衣建议
+${ADVISE}
+
+---
+小伊已经在线啦，08:30 上班路上有什么需要随时叫我 🌸"
+
+"$PUSH" "$TITLE" "$BODY"

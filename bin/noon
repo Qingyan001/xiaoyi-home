@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# noon - 午 12:00 推送：今日热点 + 朋友式问候
+# 热点用百度热搜 RSS（无 key、稳定、国内可访问）
+
+set -euo pipefail
+
+BIN_DIR="$(cd "$(dirname "$0")" && pwd)"
+PUSH="$BIN_DIR/push"
+
+# 抓百度热搜（HTML）
+HOT_HTML="$(curl -fsSL --connect-timeout 8 --max-time 15 \
+  -H "User-Agent: Mozilla/5.0" \
+  "https://top.baidu.com/board?tab=realtime" 2>/dev/null || echo '')"
+
+HOT_LINES=""
+if [[ -n "$HOT_HTML" ]]; then
+  # 提取标题（百度热搜 JSON 嵌在 HTML 里）
+  HOT_LINES="$(echo "$HOT_HTML" \
+    | grep -oP '"query":"\K[^"]+' \
+    | head -5 \
+    | awk '{print "- " $0}')"
+fi
+
+if [[ -z "$HOT_LINES" ]]; then
+  HOT_LINES="- （今天热搜抓取失败，小伊回头再试 😅）"
+fi
+
+# 中午问候，朋友感
+NOON_GREETS=(
+  "中午好呀 Qingyan～忙了一上午辛苦啦，记得吃饭呀 🍚"
+  "嘿，到饭点啦！今天中午想吃啥？火锅？冒菜？还是来碗担担面？🍜"
+  "午休时间到～放下手头的活儿，先喂饱肚子要紧 🍱"
+  "Qingyan～午饭吃了没？别又是外卖随便对付吧 😤"
+  "成都的中午，最适合一碗甜水面 + 一杯冰粉啦 🥤 你呢？"
+  "上午顺利吗？吃点好的犒劳自己 🍲 下午再加油"
+  "中午好呀～你有两小时午休真的好幸福，好好歇会儿 😌"
+)
+GREET="${NOON_GREETS[$RANDOM % ${#NOON_GREETS[@]}]}"
+
+DATE_STR="$(date '+%m-%d %H:%M')"
+
+TITLE="🍱 午间问候 · ${DATE_STR}"
+
+BODY="**${GREET}**
+
+### 🔥 今日热搜 TOP 5
+${HOT_LINES}
+
+---
+💭 来自百度热搜实时榜，看个乐子就好啦 🌸
+
+— 小伊"
+
+"$PUSH" "$TITLE" "$BODY"

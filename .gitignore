@@ -1,0 +1,30 @@
+# Local OpenClaw/runtime state
+.openclaw/
+.clawhub/
+
+# Private continuity and personal notes
+memory/
+MEMORY.md
+USER.md
+TOOLS.md
+
+# Installed third-party skills are reproducible via `openclaw skills install ...`
+skills/
+
+# Secrets / local env
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.csr
+*.token
+*.secret
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

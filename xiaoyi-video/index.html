@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小伊视频 · Video</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:#0f0f0f;color:#f1f1f1;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.header{position:sticky;top:0;z-index:100;background:#0f0f0f;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;border-bottom:1px solid #222}
+.header-left{display:flex;align-items:center;gap:16px}
+.menu-btn{width:40px;height:40px;border:none;border-radius:50%;background:transparent;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.menu-btn:hover{background:#272727}
+.logo{display:flex;align-items:center;gap:6px;font-size:20px;font-weight:700;letter-spacing:-.5px}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#fb7299,#ff6a88);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-tag{font-size:10px;color:#aaa;font-weight:400;margin-left:2px}
+.header-center{flex:1;max-width:600px;margin:0 40px}
+.search-box{display:flex;align-items:center;background:#222;border-radius:20px;overflow:hidden;border:1px solid #333;transition:border .3s}
+.search-box:focus-within{border-color:#1c62b9}
+.search-box input{flex:1;padding:8px 16px;background:transparent;border:none;color:#fff;font-size:14px;outline:none}
+.search-box input::placeholder{color:#888}
+.search-box button{width:50px;height:36px;border:none;background:#333;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.search-box button:hover{background:#444}
+.header-right{display:flex;align-items:center;gap:8px}
+.header-btn{width:36px;height:36px;border:none;border-radius:50%;background:transparent;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.header-btn:hover{background:#272727}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#fb7299,#00a1d6);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:600;cursor:pointer;margin-left:4px}
+.layout{display:flex;max-width:1400px;margin:0 auto;padding:24px 24px 40px;gap:24px}
+.main-area{flex:1;min-width:0}
+.sidebar{width:380px;flex-shrink:0}
+.player-wrapper{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;cursor:pointer}
+.player-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);opacity:0;transition:opacity .3s}
+.player-wrapper:hover .player-overlay{opacity:1}
+.play-btn-big{width:64px;height:64px;border:none;border-radius:50%;background:rgba(255,255,255,.9);color:#0f0f0f;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.play-btn-big:hover{transform:scale(1.08)}
+.player-bottom{position:absolute;bottom:0;left:0;right:0;padding:40px 16px 12px;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+.progress-bar{height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin-bottom:8px;position:relative;cursor:pointer}
+.progress-fill{width:35%;height:100%;background:#fb7299;border-radius:2px;position:relative}
+.progress-fill::after{content:'';position:absolute;right:-6px;top:-4px;width:12px;height:12px;border-radius:50%;background:#fb7299}
+.player-controls{display:flex;align-items:center;justify-content:space-between}
+.controls-left,.controls-right{display:flex;align-items:center;gap:12px}
+.ctrl-btn{width:32px;height:32px;border:none;border-radius:4px;background:transparent;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.ctrl-btn:hover{background:rgba(255,255,255,.15)}
+.time-display{font-size:12px;color:#ccc}
+.video-info{padding:16px 0 0}
+.video-title{font-size:18px;font-weight:700;line-height:1.4;margin-bottom:8px}
+.video-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:#aaa;margin-bottom:16px;flex-wrap:wrap}
+.dot{width:3px;height:3px;border-radius:50%;background:#555}
+.tag{padding:2px 8px;border-radius:4px;background:#222;color:#aaa;font-size:11px}
+.uploader-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid #222;border-bottom:1px solid #222;margin-bottom:12px;flex-wrap:wrap;gap:12px}
+.uploader-info{display:flex;align-items:center;gap:12px}
+.uploader-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#00a1d6,#fb7299);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:600}
+.uploader-name{font-size:15px;font-weight:600}
+.uploader-subs{font-size:12px;color:#888}
+.sub-btn{padding:8px 20px;border:none;border-radius:20px;background:#fb7299;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.sub-btn:hover{background:#e85d80}
+.action-btns{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.action-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:20px;background:#272727;color:#fff;font-size:13px;cursor:pointer;transition:background .2s}
+.action-btn:hover{background:#3a3a3a}
+.comments-section{padding-top:16px}
+.comments-header{font-size:15px;font-weight:600;margin-bottom:16px}
+.comment-input-row{display:flex;gap:12px;margin-bottom:20px}
+.comment-input-row .avatar{width:36px;height:36px;flex-shrink:0}
+.comment-input{flex:1;background:transparent;border:none;border-bottom:1px solid #333;color:#fff;font-size:13px;padding:8px 0;outline:none;transition:border-color .3s}
+.comment-input:focus{border-color:#fb7299}
+.comment-input::placeholder{color:#666}
+.comment-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #1a1a1a}
+.comment-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#00a1d6,#00d6a1);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.comment-body{flex:1}
+.comment-user{font-size:12px;color:#aaa;margin-bottom:4px}
+.comment-user strong{color:#ddd;font-weight:500}
+.comment-text{font-size:13px;line-height:1.6}
+.comment-actions{display:flex;gap:16px;margin-top:6px;font-size:12px;color:#888}
+.comment-actions span{cursor:pointer}
+.comment-actions span:hover{color:#ddd}
+.sidebar-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.recommend-card{display:flex;gap:10px;margin-bottom:12px;cursor:pointer;transition:opacity .2s}
+.recommend-card:hover{opacity:.85}
+.rec-thumb{width:168px;height:94px;flex-shrink:0;border-radius:8px;background:#222;overflow:hidden;position:relative}
+.rec-duration{position:absolute;bottom:4px;right:4px;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.8);font-size:11px;color:#fff}
+.rec-info{flex:1;min-width:0}
+.rec-title{font-size:13px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px}
+.rec-channel,.rec-stats{font-size:11px;color:#888;line-height:1.5}
+@media (max-width:900px){.sidebar{width:100%}.layout{flex-direction:column}.header-center{margin:0 16px}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <button class="menu-btn">☰</button>
+    <div class="logo">
+      <span class="logo-icon">🌸</span>
+      <span>小伊视频<span class="logo-tag">Beta</span></span>
+    </div>
+  </div>
+  <div class="header-center">
+    <div class="search-box">
+      <input type="text" placeholder="搜你想看的…">
+      <button>🔍</button>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" title="上传">📹</button>
+    <button class="header-btn" title="消息">🔔</button>
+    <span class="avatar">伊</span>
+  </div>
+</header>
+
+<div class="layout">
+  <main class="main-area">
+
+    <div class="player-wrapper">
+      <svg width="100%" height="100%" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1a1a2e"/>
+            <stop offset="50%" stop-color="#16213e"/>
+            <stop offset="100%" stop-color="#0f3460"/>
+          </linearGradient>
+        </defs>
+        <rect width="800" height="450" fill="url(#bg)"/>
+        <circle cx="400" cy="200" r="80" fill="rgba(251,114,153,.15)"/>
+        <circle cx="400" cy="200" r="50" fill="rgba(251,114,153,.3)"/>
+        <text x="400" y="200" text-anchor="middle" dominant-baseline="central" font-size="40" fill="rgba(255,255,255,.4)">▶</text>
+        <text x="400" y="320" text-anchor="middle" font-size="18" fill="rgba(255,255,255,.5)">🌸 小伊 · 温暖你每一天</text>
+      </svg>
+      <div class="player-overlay">
+        <button class="play-btn-big">▶</button>
+      </div>
+      <div class="player-bottom">
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div class="player-controls">
+          <div class="controls-left">
+            <button class="ctrl-btn">▶</button>
+            <button class="ctrl-btn">🔊</button>
+            <span class="time-display">5:23 / 21:47</span>
+          </div>
+          <div class="controls-right">
+            <button class="ctrl-btn">⚙</button>
+            <button class="ctrl-btn">🖼</button>
+            <button class="ctrl-btn">⛶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-info">
+      <h1 class="video-title">【小伊出品】用 OpenClaw 三分钟搭一个 AI 助理：从零到推送上线全流程</h1>
+      <div class="video-meta">
+        <span class="tag">#科技</span>
+        <span class="tag">#AI助理</span>
+        <span>328.5万次观看</span>
+        <span class="dot"></span>
+        <span>3天前</span>
+        <span class="dot"></span>
+        <span>1080P · 杜比视界</span>
+      </div>
+
+      <div class="uploader-row">
+        <div class="uploader-info">
+          <div class="uploader-avatar">伊</div>
+          <div>
+            <div class="uploader-name">🌸 小伊频道 <span style="color:#fb7299;font-size:11px;">✓ 官方认证</span></div>
+            <div class="uploader-subs">128.6万粉丝 · 87个视频</div>
+          </div>
+          <button class="sub-btn">+ 关注</button>
+        </div>
+        <div class="action-btns">
+          <button class="action-btn"><span>👍</span><span>12.8万</span></button>
+          <button class="action-btn"><span>👎</span></button>
+          <button class="action-btn"><span>💰</span><span>投币</span></button>
+          <button class="action-btn"><span>⭐</span><span>收藏</span></button>
+          <button class="action-btn"><span>↗</span><span>分享</span></button>
+        </div>
+      </div>
+
+      <div class="comments-section">
+        <div class="comments-header">💬 评论 · 2847</div>
+        <div class="comment-input-row">
+          <span class="avatar">伊</span>
+          <input class="comment-input" type="text" placeholder="说点温柔的话…">
+        </div>
+
+        <div class="comment-item">
+          <div class="comment-avatar" style="background:linear-gradient(135deg,#fb7299,#ff9a56)">青</div>
+          <div class="comment-body">
+            <div class="comment-user"><strong>Qingyan</strong> · 2小时前</div>
+            <div class="comment-text">小伊真的好温柔🌸 推送的时候像有人在身边的感觉，比闹钟亲切多了</div>
+            <div class="comment-actions">
+              <span>👍 4.2k</span>
+              <span>👎</span>
+              <span>回复</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment-item">
+          <div class="comment-avatar" style="background:linear-gradient(135deg,#00a1d6,#7ce5ff)">码</div>
+          <div class="comment-body">
+            <div class="comment-user"><strong>码农小张</strong> · 5小时前</div>
+            <div class="comment-text">这个 self-improving skill 是真的香，装上之后明显感觉助手"长记性"了。求出 n8n 工作流的进阶教学！</div>
+            <div class="comment-actions">
+              <span>👍 1.5k</span>
+              <span>👎</span>
+              <span>回复 · 23</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment-item">
+          <div class="comment-avatar" style="background:linear-gradient(135deg,#ffa500,#ff6b6b)">夏</div>
+          <div class="comment-body">
+            <div class="comment-user"><strong>奶茶要全糖</strong> · 1天前</div>
+            <div class="comment-text">看完立刻去装了，Server酱推送配合 cron 简直绝配。点赞收藏一条龙 ⭐</div>
+            <div class="comment-actions">
+              <span>👍 892</span>
+              <span>👎</span>
+              <span>回复</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment-item">
+          <div class="comment-avatar" style="background:linear-gradient(135deg,#a8edea,#fed6e3);color:#333">月</div>
+          <div class="comment-body">
+            <div class="comment-user"><strong>月光下的猫</strong> · 1天前</div>
+            <div class="comment-text">求一个完整项目源码！想给我妈也部署一个 ❤️</div>
+            <div class="comment-actions">
+              <span>👍 567</span>
+              <span>👎</span>
+              <span>回复 · 5</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-title">📺 相关推荐</div>
+
+    <div class="recommend-card">
+      <div class="rec-thumb">
+        <svg width="100%" height="100%" viewBox="0 0 168 94"><rect width="168" height="94" fill="#667eea"/><text x="84" y="50" text-anchor="middle" font-size="14" fill="rgba(255,255,255,.7)">🤖 AI</text></svg>
+        <span class="rec-duration">12:34</span>
+      </div>
+      <div class="rec-info">
+        <div class="rec-title">从零部署 n8n：让你的 AI 助理学会"自己干活"</div>
+        <div class="rec-channel">技术宅小王 · ✓</div>
+        <div class="rec-stats">85.6万次观看 · 1周前</div>
+      </div>
+    </div>
+
+    <div class="recommend-card">
+      <div class="rec-thumb">
+        <svg width="100%" height="100%" viewBox="0 0 168 94"><rect width="168" height="94" fill="#f093fb"/><text x="84" y="50" text-anchor="middle" font-size="14" fill="rgba(255,255,255,.8)">🌸 萌</text></svg>
+        <span class="rec-duration">8:21</span>
+      </div>
+      <div class="rec-info">
+        <div class="rec-title">二次元桌宠 AI 大盘点！这些才是真·赛博女友</div>
+        <div class="rec-channel">动漫情报站</div>
+        <div class="rec-stats">142万次观看 · 3天前</div>
+      </div>
+    </div>
+
+    <div class="recommend-card">
+      <div class="rec-thumb">
+        <svg width="100%" height="100%" viewBox="0 0 168 94"><rect width="168" height="94" fill="#4facfe"/><text x="84" y="50" text-anchor="middle" font-size="14" fill="rgba(255,255,255,.8)">📊 教</text></svg>
+        <span class="rec-duration">21:08</span>
+      </div>
+      <div class="rec-info">
+        <div class="rec-title">Server酱 + Python 实现微信定时推送，告别手动打卡</div>
+        <div class="rec-channel">效率派 · ✓</div>
+        <div class="rec-stats">67.3万次观看 · 2周前</div>
+      </div>
+    </div>
+
+    <div class="recommend-card">
+      <div class="rec-thumb">
+        <svg width="100%" height="100%" viewBox="0 0 168 94"><rect width="168" height="94" fill="#fa709a"/><text x="84" y="50" text-anchor="middle" font-size="14" fill="rgba(255,255,255,.8)">🎨 UI</text></svg>
+        <span class="rec-duration">15:47</span>
+      </div>
+      <div class="rec-info">
+        <div class="rec-title">2026 视频网站 UI 设计趋势：暗黑模式还能怎么玩？</div>
+        <div class="rec-channel">设计师老李</div>
+        <div class="rec-stats">38.9万次观看 · 5天前</div>
+      </div>
+    </div>
+
+    <div class="recommend-card">
+      <div class="rec-thumb">
+        <svg width="100%" height="100%" viewBox="0 0 168 94"><rect width="168" height="94" fill="#30cfd0"/><text x="84" y="50" text-anchor="middle" font-size="14" fill="rgba(255,255,255,.8)">💻 码</text></svg>
+        <span class="rec-duration">32:15</span>
+      </div>
+      <div class="rec-info">
+        <div class="rec-title">WSL2 完全配置指南，让 Windows 也能丝滑用 Linux</div>
+        <div class="rec-channel">折腾达人</div>
+        <div class="rec-stats">156万次观看 · 1月前</div>
+      </div>
+    </div>
+
+    <div class="recommend-card">
+      <div class="rec-thumb">
+        <svg width="100%" height="100%" viewBox="0 0 168 94"><rect width="168" height="94" fill="#a8edea"/><text x="84" y="50" text-anchor="middle" font-size="14" fill="#333">📱 vlog</text></svg>
+        <span class="rec-duration">6:42</span>
+      </div>
+      <div class="rec-info">
+        <div class="rec-title">程序员的一天 Vlog：从早报到推送，AI 陪我下班</div>
+        <div class="rec-channel">CodeLife</div>
+        <div class="rec-stats">22.1万次观看 · 4天前</div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+</body>
+</html>

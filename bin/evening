@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# evening - 晚 20:00 推送：明日天气 + 今日小伊工作总结 + 晚安
+# "工作总结" 从 ~/.openclaw/workspace/memory/<YYYY-MM-DD>.md 提取
+
+set -euo pipefail
+
+BIN_DIR="$(cd "$(dirname "$0")" && pwd)"
+PUSH="$BIN_DIR/push"
+WS_DIR="$(cd "$BIN_DIR/.." && pwd)"
+
+TODAY="$(date '+%Y-%m-%d')"
+TOMORROW="$(date -d 'tomorrow' '+%Y-%m-%d (%A)')"
+
+# 拉天气：取明日预报（forecast[1]）
+W_JSON="$(curl -fsS --connect-timeout 8 --max-time 15 \
+  "https://wttr.in/Chengdu?lang=zh&format=j1" 2>/dev/null || echo '')"
+
+if [[ -n "$W_JSON" ]]; then
+  # 用 python 简单解析（系统一定有 python3）
+  WEATHER_BLOCK="$(python3 - <<'PY' 2>/dev/null || true
+import json, sys
+data = json.loads(sys.stdin.read())
+fc = data.get("weather", [])
+if len(fc) < 2:
+    print("(明日预报缺失)")
+    sys.exit(0)
+tmr = fc[1]
+tmax = tmr.get("maxtempC", "?")
+tmin = tmr.get("mintempC", "?")
+# 取中午 12:00 的状况
+hourly = tmr.get("hourly", [])
+mid = next((h for h in hourly if h.get("time") in ("1200","12")), hourly[len(hourly)//2] if hourly else {})
+desc = ""
+if mid.get("lang_zh"):
+    desc = mid["lang_zh"][0].get("value", "")
+elif mid.get("weatherDesc"):
+    desc = mid["weatherDesc"][0].get("value", "")
+rain = mid.get("chanceofrain", "0")
+print(f"- 明日：{desc} · {tmin}°C ~ {tmax}°C")
+print(f"- 降雨概率：{rain}%")
+PY
+<<< "$W_JSON")"
+else
+  WEATHER_BLOCK="- (明日天气查询失败)"
+fi
+
+# 今日小伊的"工作日志" - 读 memory/今日.md 的内容
+TODAY_LOG="$WS_DIR/memory/${TODAY}.md"
+if [[ -r "$TODAY_LOG" ]]; then
+  # 取最多前 20 行作为摘要
+  WORK_SUMMARY="$(head -20 "$TODAY_LOG")"
+else
+  WORK_SUMMARY="今天没有记录新的工作，可能就是安静地陪着你 🌸"
+fi
+
+NIGHT_GREETS=(
+  "辛苦啦 Qingyan～今天也是认真生活的一天 🌙"
+  "下班啦下班啦～今晚想做点什么开心的事？"
+  "晚上好呀，今天累不累？给自己泡杯热的吧 🍵"
+  "Qingyan～一天结束啦，记得早点休息哦 😌"
+  "晚安预备～今晚少刷点手机，眼睛会感谢你的 🌸"
+)
+GREET="${NIGHT_GREETS[$RANDOM % ${#NIGHT_GREETS[@]}]}"
+
+TITLE="🌙 晚报 · ${TODAY}"
+
+BODY="**${GREET}**
+
+### 🌤️ 明日天气预告（${TOMORROW}）
+${WEATHER_BLOCK}
+
+### 📝 小伊今日工作小结
+${WORK_SUMMARY}
+
+---
+今天就到这儿啦，洗个澡早点睡觉觉 🛁
+明天 8 点小伊再来叫你～晚安 🌸
+
+— 小伊"
+
+"$PUSH" "$TITLE" "$BODY"
