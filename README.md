@@ -12,6 +12,7 @@
 - `HEARTBEAT.md`：心跳/主动检查规则
 - `bin/`：本地推送脚本模板（不含密钥）
 - `xiaoyi-video/`：一个参考主流视频平台设计的纯前端视频页面 demo
+- `docs/public-repo-safety.md`：公开仓库提交安全策略
 
 ## 没有提交什么
 
